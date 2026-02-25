@@ -4,40 +4,97 @@ import { execSync } from "child_process";
 import path from "path";
 import fs from "fs-extra";
 
-// 1. Get the project name from command line arguments
-const projectName = process.argv[2];
+// Get arguments
+const commandOrName = process.argv[2]; // e.g., 'my-app' OR 'add'
+const moduleName = process.argv[3]; // e.g., undefined OR 'logger'
 
-if (!projectName) {
-  console.error("Please specify the project directory:");
-  console.log("  npx create-express-pro <project-directory>");
+if (!commandOrName) {
+  console.error("❌ Please specify a command or project directory:");
+  console.log("  npx create-express-pro-test <project-directory>");
+  console.log("  npx create-express-pro-test add <module-name>");
   process.exit(1);
 }
 
-const currentDir = process.cwd();
-const projectPath = path.join(currentDir, projectName);
-const gitRepo = "https://github.com/suryakarmakar-codeclouds/express-pro"; // YOUR REPO URL
+// ==========================================
+// LOGIC 1: ADD A MODULE (The shadcn way)
+// ==========================================
+if (commandOrName === "add") {
+  if (!moduleName) {
+    console.error("❌ Please specify a module to add (e.g., logger, auth).");
+    process.exit(1);
+  }
 
-try {
-  console.log(`🚀 Creating a new Express Pro project in ${projectPath}...`);
+  // Replace this with your actual RAW GitHub URL for the registry
+  const registryBaseUrl =
+    "https://github.com/suryakarmakar-codeclouds/express-pro-registry/blob/main";
+  const moduleUrl = `${registryBaseUrl}/${moduleName}.json`;
 
-  // 2. Clone the repository
-  execSync(`git clone --depth 1 ${gitRepo} "${projectPath}"`, {
-    stdio: "inherit",
-  });
+  const addModule = async () => {
+    try {
+      console.log(`⬇️  Fetching ${moduleName} from registry...`);
 
-  // 3. Clean up the project
-  process.chdir(projectPath);
+      // Using native fetch (Node 18+)
+      const response = await fetch(moduleUrl);
+      if (!response.ok) throw new Error("Module not found in registry.");
 
-  // Remove the .git folder so it's a fresh project for the user
-  fs.removeSync(path.join(projectPath, ".git"));
+      const moduleData = await response.json();
 
-  console.log("📦 Installing dependencies...");
-  execSync("npm install", { stdio: "inherit" });
+      // 1. Install Dependencies if the module has any
+      if (moduleData.dependencies && moduleData.dependencies.length > 0) {
+        console.log(
+          `📦 Installing dependencies: ${moduleData.dependencies.join(", ")}`,
+        );
+        execSync(`npm install ${moduleData.dependencies.join(" ")}`, {
+          stdio: "inherit",
+        });
+      }
 
-  console.log("\n✅ Success! To get started:");
-  console.log(`  cd ${projectName}`);
-  console.log("  npm run dev");
-} catch (error) {
-  console.error("❌ Failed to create project:", error);
-  process.exit(1);
+      // 2. Create the files in the user's project
+      for (const file of moduleData.files) {
+        const destination = path.join(process.cwd(), file.targetPath);
+
+        // Ensure the folder exists (e.g., 'utils/')
+        await fs.ensureDir(path.dirname(destination));
+
+        // Write the code to the file
+        await fs.writeFile(destination, file.content);
+        console.log(`✅ Created: ${file.targetPath}`);
+      }
+
+      console.log(`\n🚀 Successfully added ${moduleName}!`);
+    } catch (error) {
+      console.error(`❌ Failed to add module: ${error.message}`);
+    }
+  };
+
+  addModule();
+}
+// ==========================================
+// LOGIC 2: CREATE A NEW PROJECT
+// ==========================================
+else {
+  const currentDir = process.cwd();
+  const projectPath = path.join(currentDir, commandOrName);
+  const gitRepo = "https://github.com/suryakarmakar-codeclouds/express-pro";
+
+  try {
+    console.log(`🚀 Creating a new Express Pro project in ${projectPath}...`);
+
+    execSync(`git clone --depth 1 ${gitRepo} "${projectPath}"`, {
+      stdio: "inherit",
+    });
+
+    process.chdir(projectPath);
+    fs.removeSync(path.join(projectPath, ".git"));
+
+    console.log("📦 Installing base dependencies...");
+    execSync("npm install", { stdio: "inherit" });
+
+    console.log("\n✅ Success! To get started:");
+    console.log(`  cd ${commandOrName}`);
+    console.log("  npm run dev");
+  } catch (error) {
+    console.error("❌ Failed to create project:", error);
+    process.exit(1);
+  }
 }
