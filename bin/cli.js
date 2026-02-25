@@ -26,7 +26,7 @@ if (commandOrName === "add") {
 
   // Replace this with your actual RAW GitHub URL for the registry
   const registryBaseUrl =
-    "https://github.com/suryakarmakar-codeclouds/express-pro-registry/blob/main";
+    "https://raw.githubusercontent.com/suryakarmakar-codeclouds/express-pro-registry/main";
   const moduleUrl = `${registryBaseUrl}/${moduleName}.json`;
 
   const addModule = async () => {
