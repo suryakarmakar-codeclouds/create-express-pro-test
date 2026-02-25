@@ -4,7 +4,7 @@
   "description": "CLI to bootstrap Express Pro projects",
   "main": "bin/cli.js",
   "bin": {
-    "create-express-pro": "./bin/cli.js"
+    "create-express-pro-test": "./bin/cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
