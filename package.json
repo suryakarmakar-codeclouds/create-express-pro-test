@@ -1,5 +1,5 @@
 {
-  "name": "create-express-pro",
+  "name": "create-express-pro-test",
   "version": "1.0.0",
   "description": "CLI to bootstrap Express Pro projects",
   "main": "bin/cli.js",
