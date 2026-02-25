@@ -1,0 +1,18 @@
+{
+  "name": "create-express-pro",
+  "version": "1.0.0",
+  "description": "CLI to bootstrap Express Pro projects",
+  "main": "bin/cli.js",
+  "bin": {
+    "create-express-pro": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "chalk": "^5.0.0",
+    "fs-extra": "^11.0.0",
+    "inquirer": "^9.0.0"
+  },
+  "type": "module"
+}
